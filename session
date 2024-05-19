@@ -1,0 +1,314 @@
+																	=========================
+																	AWS Session Scratch PAD:
+																	=========================
+shobhit
+https://767397847830.signin.aws.amazon.com/console
+
+
+
+AWS REGION
+AWS AZ
+IAM
+
+
+
+R1 - REGION
+- AZ1
+- AZ2
+- AZ3
+
+Minimum = 3
+Max = 6
+
+1. Compliance
+2. Proximity
+3. Available service
+4. Pricing
+
+
+IAM:
+
+
+ROOT USER
+-- usergroups
+   -- users
+
+-- users
+
+to set permission and restriction - policy (json document)
+
+
+Developers: (permission) - p1 
+u1
+u2
+u3
+
+Operations: (permission) - p2
+u4
+u5
+u6
+
+Audit: (permission) - p3
+u3
+u4
+
+u3 - p1 , p3
+u4 - p2 , p3
+
+
+Basic Admin permission 
+- create a user
+- modify a user
+
+X 
+
+BAP ( policy BAP : create and modify permission )
+X
+
+
+
+-------------------
+
+{
+
+ "Version": "2012-10-17",
+ "Statement": [
+ {
+ "Effect": "Allow",
+ "Action": "ec2:Describe*",
+ "Resource": "*"
+ },
+ {
+ "Effect": "Allow",
+ "Action": "elasticloadbalancing:Describe*"
+,
+ "Resource": "*"
+ },
+ {
+ "Effect": "Allow",
+ "Action": [
+ "cloudwatch:ListMetrics",
+ "cloudwatch:GetMetricStatistics",
+ "cloudwatch:Describe*"
+ ],
+ "Resource": "*"
+ }
+ ]
+}
+
+
+Json: ( semi structured file )
+
+a={
+	"key1" : "value1",
+	"key2" : "value2",
+	"key3" : "value3",
+	.........
+	"key4":["val1","val2",....]
+	"key5":[{"k1":"v1"},{"k2":"v2"},....]
+	"key5":[{"k1":"v1"},{"k2":["v1","v2"]},....]
+}
+
+
+print(a[key1])
+value1
+
+a[key1]=value10
+
+print(a[key1])
+value10
+
+
+shobhit
+https://767397847830.signin.aws.amazon.com/console
+
+
+
+
+Regions :
+
+Type 1 : Global service. - IAM , 
+Type 2 : Region Specific Service - Lambda / Glue / RDS 
+
+compute:
+1. server based service - EC2
+2. serverless based service - Lambda , Glue ( automatically memory , vcpu - autoscale )
+
+
+list:
+EC2 , Lambda , glue , ECS , 
+
+
+
+
+
+
+AmazonS3FullAccess
+AmazonDynamoDBFullAccess
+AWSGlueServiceRole
+AWSLambdaFullAccess
+AmazonRedshiftFullAccess
+AmazonAthenaFullAccess
+AmazonKinesisFullAccess
+AmazonEC2ReadOnlyAccess
+AWSLambdaExecute
+AWSGlueConsoleFullAccess
+
+
+
+
+
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "BaseAthenaPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "athena:*"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseGluePermissions",
+            "Effect": "Allow",
+            "Action": [
+                "glue:GetDatabase",
+                "glue:GetDatabases",
+                "glue:UpdateDatabase",
+                "glue:CreateTable",
+                "glue:BatchDeleteTable",
+                "glue:UpdateTable",
+                "glue:GetTable",
+                "glue:GetTables",
+                "glue:BatchCreatePartition",
+                "glue:CreatePartition",
+                "glue:BatchDeletePartition",
+                "glue:UpdatePartition",
+                "glue:GetPartition",
+                "glue:GetPartitions",
+                "glue:BatchGetPartition",
+                "glue:StartColumnStatisticsTaskRun",
+                "glue:GetColumnStatisticsTaskRun",
+                "glue:GetColumnStatisticsTaskRuns"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseQueryResultsPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads",
+        
+            "Resource": [
+                "arn:aws:s3:::aws-athena-query-results-*"
+            ]
+        },
+        {
+            "Sid": "BaseAthenaExamplesPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::athena-examples*"
+            ]
+        },
+        {
+            "Sid": "BaseS3BucketPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseSNSPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "sns:ListTopics",
+                "sns:GetTopicAttributes"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseCloudWatchPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:PutMetricAlarm",
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:GetMetricData"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseLakeFormationPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "lakeformation:GetDataAccess"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BaseDataZonePermissions",
+            "Effect": "Allow",
+            "Action": [
+                "datazone:ListDomains",
+                "datazone:ListProjects",
+                "datazone:ListAccountEnvironments"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "BasePricingPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "pricing:GetProducts"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+
+
+
+
+AWS :
+1. Console
+2. AWS CLI - command line interface
+3. AWS SDK - Software dev kit
+
+
+Keys:
+Access Keys  - User_id
+Secret Keys  - PWD
+
+once 
+-- 90 days
+-- Key rotation mechanism
+
