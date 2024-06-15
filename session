@@ -1,8 +1,6 @@
-										=========================
-										AWS Session Scratch PAD:
-										=========================
-
-
+------------
+AWS session:
+------------
 
 AWS REGION
 AWS AZ
@@ -298,15 +296,440 @@ AWSGlueConsoleFullAccess
 
 AWS :
 1. Console
-2. AWS CLI - command line interface
+2. AWS CLI - command line interface	
 3. AWS SDK - Software dev kit
+
+SDK:
+1. Inside AWS from any AWS service ( Lambda / Glue / API Gateway ... )
+import boto3
+gluesession=boto3.session("Glue")
+
+2. local mac --> AWS (python code - boto3)
+
+
+
+1. csv file everyday on s3
+2. quality check on file
+3. passed then you need to run tx on data 
+4. transformed data should be laoded in SQL database
+5. send email on completion of the process
+
+
+s3 -- > lambda -- > Glue (python/pyspark) -- > SQL server (EC2/AroraDB/RDS) --> SES
 
 
 Keys:
 Access Keys  - User_id
 Secret Keys  - PWD
 
-once 
+Key CHANGE once in :
 -- 90 days
 -- Key rotation mechanism
 
+
+
+aws iam list-users --env DEV --region DEV-REGION
+
+
+DEV 
+ak1
+sk1
+
+UAT
+ak2
+sk2
+
+PROD
+ak3
+sk3
+
+
+
+( local terminal ) aws iam list-users
+1. config to check for keys
+2. get the keys from config and login to aws
+3. login successfull then go to iam service
+4. run list-users to get list of users
+5. return the output as a json string to the local terminal
+
+
+
+IAM - ROLES
+S3
+
+
+U1 - Data engineer
+U2 - Data engineer
+
+U3 - Data analyst
+
+U4 - Data scientist
+
+
+
+ROLES - AWS SERVICE
+
+EC2 --- S3 
+    --- Lambda
+
+Apache AIRFLOW 
+s3 -- > lambda -- > Glue (python/pyspark) -- > SQL server (EC2/AroraDB/RDS) --> SES
+
+AWS Step function -- orchest
+
+
+
+
+
+S3:
+
+-- Infinite Scaling service
+-- Store the files 
+-- Create a data lake ( structed , unstructed , semi-)
+-- Create a data catalog
+-- Disaster Recovery
+-- Database backups
+-- Version control
+
+-- Store the code of your website
+
+S3:
+1. Buckets
+2. Objects (files)
+3. Keys
+
+
+s3://my-bucket/my-file.txt
+s3://my-bucket/my-folder/my-file.txt
+
+Max object size - 5TB 
+Object size of 5GB - use multi-part upload
+Versioning can be done on S3 files 
+
+
+
+
+Access of S3:
+
+1.  Region specific service -- which user base what's to access the s3 , which service whats to access
+
+Application (Service) Access:
+=============================
+us-east-1
+S3 -- bucket-test/test/test.txt
+
+us-east-1
+Lambda (apply necessary policy on bucket or apply IAM role)
+
+us-west-1
+Lambda (same policy like us-east-1 lambda)
+
+
+
+-----
+s3 bucket can be accessed publically without any rule
+
+- no aws users are required
+- no policy 
+- no IAM
+
+
+ static websites
+ - private
+ - public
+
+
+
+
+ACL
+-- 
+IAM roles + Policies + AWS setting --> access of a user who is accessing the bucket
+
+
+hospital 
+
+payment ( tx ) POS --> generates the recipt (online) --> event trigger on Lambda --> move the file to AWS S3 --> SNS ( sms to the user )
+
+
+Cross Account Access:
+
+
+Client 
+
+AWS
+===
+1. Acc1 - Sales team is using ( Tech ) -- csv file
+2. Acc2 - Data Team (s3)
+
+
+
+Versioning:
+------------
+
+Bucket level 
+
+S3 --> test.txt ( contents )
+
+Versioning - disabled
+
+test.txt - marker -- null
+
+Versioning - activated
+
+test.txt - marker -- id1 ( random text - version id) - v1
+test.txt - marker -- id2 ( random text - version id) - v2 
+test.txt - marker -- delete marker - id3 ( random text - version id) - v3 ( hide the file from the user )
+
+
+
+Version1:
+test.txt -- file -- data
+markers -- memory locations on the servers -- metadata of the file
+
+Version2:
+test.txt -- file -- data
+markers -- memory locations on the servers -- metadata of the file
+
+
+Version3:
+test.txt -- file -- data
+markers -- memory locations on the servers -- metadata of the file
+
+
+
+ type:
+1. file extension
+2. delete marker
+
+
+
+Versioning:
+1. UI
+2. AWS CLI - aws s3api put-bucket-versioning --bucket your-bucket-name --versioning-configuration Status=Enabled
+
+Shell script : ( automation - INfra provisioning )
+
+aws create s3 buckets
+aws enable versioning
+aws object lifecycle policies
+aws set s3 permissions
+
+details of operation >> log.txt
+
+aws create ec2 server
+aws set ec2 permissions
+
+
+Cross - Region Replication
+
+s3 -- us-east1 ---> s3 -- us-west1
+
+
+
+Use case:
+---------
+End to end architecture for an e-commerce chain
+
+source --- reporting level
+
+Source
+1) batch processing -- s3
+2) real time -- Amazon Kinesis data stream ( Kafka stream pub sub)
+
+data storage
+1) structured - table - RDS , Arora , Redshift ( datawarehouse ) ...
+2) semi-structured - json -- Dynamodb (NOSQL database)
+3) semi-structured,structured,unstructured -- S3 ( Datalake )
+
+data processing
+1) Real time -- Lambda ( triggering workflows , QC of the data ) -- 15 mins
+2) Big data application - EMR ( Elastic Map Reduce -- Hadoop setup , spark setup )
+3) ETL work -- size -- midsize ( 1-50 GBs ) -- Glue ( Python , Pyspark )
+
+Data analytics
+1) Redshift - Datawarehouse
+2) Athena - for running queries on S3 data 
+
+
+
+
+
+
+Topics for today:
+--------------------
+1. Data replication on S3 
+2. Storage classes in S3
+3. Insurance use case , data model and architecture design
+
+
+
+
+Data rep :
+1. Cross Region Replication ( CRR )
+
+bucket1 = us-east-1 (P) 
+bucket2 = us-west-1 (S)
+CRR - (P)
+
+-- Versioning on the buckets (P & S) must be activated
+
+
+case 1: Rep is ON / ver is OFF ( Hypothetical )
+
+test.txt - bucket1 -- 1234
+test.txt - bucket2 -- 1234
+
+test.txt - bucket1 -- not maintain the history -- 123456
+test.txt - bucket2 -- not maintain -- 123456
+
+delete test.txt -- bucket 1 -- not maintain the history - file removed
+-- AWS will stop this replication action to happen (X) ( Security feature )
+
+rm -f <filename>
+rm -f *
+
+
+case 2 : Rep is ON / ver is ON ( Real implementation )
+delete test.txt -- bucket 1 --  maintain the history - delete marker - file removed ( file is still there )
+delete test.txt -- bucket 2 --  maintain the history - delete marker - file removed ( file is still there )
+rm -f *
+RESTORE OPERATION
+
+S3 -- TOGGLE 
+
+V1 -- NEW FILE  -- VERSION_ID:1 : TYPE: NULL
+V2 -- FILE UPDATED -- VERSION_ID:2 TYPE: NULL
+V3 -- FILE DELETED -- VERSION_ID: 3 TYPE : DELETE MARKER
+
+2. Same Region Replication ( SRR )
+
+bucket1 = us-east-1 (P) - 10 files (test_yymmdd.csv)
+bucket2 = us-east-1 (S) - 1 file   (test_yymmdd.csv) 
+
+
+
+Chain operation -- NOT supported in Replication
+
+bucket 1 -- bucket 2 -- bucket 3 
+(Rep-rule1) - (Rep-rule2) 
+
+test1.txt -- test1.txt -- X
+
+
+bucket 1 -- bucket 3 
+(Rep-rule1)
+test1.txt -- test1.txt
+
+
+-------
+
+Bucket 1 -- Bucket 2 -- Bucket 3
+
+ ( source ) ( Inter) ( Dest )
+
+
+CASE1:
+------
+
+Bucket 1     -- Bucket 2 -- Bucket 3
+(rule1)
+(copy 1-2)
+test.txt     -- test.txt
+(orginal-abc1)   (copy - xyz-1)
+
+
+CASE2:  NO CHAIN REPLICATION IS POSSIBLE 
+-------
+        Bucket 1     -- Bucket 2    --   Bucket 3
+        (rule1)         (rule2)
+        (copy 1-2)      (copy 2-3)
+
+(a)     customer.txt.   --  customer.txt --   X
+        (original file)    (copied file)
+         version id -abc1  version id -xyz-1
+
+
+b)      Bucket 1     -- Bucket 2 
+        Bucket 1     -- Bucket 3 
+
+
+
+
+AWS
+-- 2 accounts 
+
+
+
+MICROSOFT (AWS)
+-- FIN ( AWS Seperate Account - AID 1 )
+-- TEC ( AWS Seperate Account - AID 2 )
+-- SALES ( AWS Seperate Account - AID 3 )
+-- HR ( AWS Seperate Account - AID 4 )
+
+
+Dataset -- Survey
+
+Technology tool which customer is using 
+Happy with the price
+Happy with the after sales services 
+
+(csv file )
+
+Cross account replication
+
+
+file1 --> Sales-bucket ( Sales account AID 3 ) ---> tech-bucket ( tech - account - AID 2 )
+                ( Replication rule )                     ( Replication rule )
+
+
+
+AWS Key Management System  -- Key
+
+Customer -- TX -- CC -- Invoice data file --- AWS 
+
+
+
+Bucket 1          --         Bucket 2
+Replication Rule 
+(Replication Job)
+
+
+
+
+Batch Operation
+--------------
+
+Bucket 1   
+
+- file1
+- file2
+- file3
+- file4 
+20th Apr 2023
+
+21th Apr 2023 -- ( Replication Rule ) -- do you want to move the Existing file or not ?
+- file5
+- file6
+- file7
+
+Bucket 2  ( data analytics BA )
+- file1
+- file2
+- file3
+- file4 
+
+- file5
+- file6
+- file7
+
+Batch Operation - will move historical data before the creation of replication rule to destination bucket
+
+
+
+--------------------
+ S3 storage classes:
+--------------------
+- data availabilty 
+- durability of the data
+- cost of storage the data
+- data retrieval cost
