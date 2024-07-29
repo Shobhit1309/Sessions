@@ -725,7 +725,6 @@ Bucket 2  ( data analytics BA )
 Batch Operation - will move historical data before the creation of replication rule to destination bucket
 
 
-
 --------------------
  S3 storage classes:
 --------------------
@@ -733,3 +732,499 @@ Batch Operation - will move historical data before the creation of replication r
 - durability of the data
 - cost of storage the data
 - data retrieval cost
+
+
+==========
+Insurance:
+==========
+
+1. Usecase
+2. ODS --> DW on AWS vs Onprim
+
+
+
+Source:
+--------
+1. Flat files ( csv , tsv , xls )
+
+
+Policy data -- hold by the insurance company
+Claims data - claims processing data -- insurance company + third party policy generation company
+CRM ( customer relationship management data ) -- customer profiles , customer interaction with Agents , customer feedback and survey data
+                                                                                                                ( Qualtrics ) audio recording + 
+                                                                                                                 feedback form + tran script 
+
+                                                                                                                   REST API --> Python based API
+                                                                                                                   ( requests ) --> hit API --> Extract data-- > Json
+
+
+
+
+Sources:
+1. Files - Policy Data 
+2. Rest APIs - Feedback data
+3. Databases - Claims data
+
+
+source ---> S3 ( landing layer )
+
+
+
+
+
+
+
+
+
+
+
+
+SOAP API: 
+XML file
+
+REST API:
+1. Request: {"company_name":"ABC","duration":"last1 month"}
+2. Response - Json format
+
+Python 3
+import requests 
+
+
+
+
+
+ 
+{
+    "name":"shobhit"
+    "address":"176 XYUS"
+    "age":49
+}    
+
+
+[
+   {
+    "client_name":"shobhit",
+    "client_policy_num": 3872197871289,
+    "claim_date": "12-09-2002",
+    "first_claim_done":True
+    },
+    {
+    "client_name":"john",
+    "client_policy_num": 38721978712892,
+    "claim_date": "12-09-2002",
+    "first_claim_done":True
+    }
+]
+
+[
+{
+"client_name":["shobhit","john"...]
+"client_policy_num": [3872197871289,972137147021]
+"claim_date": ["12-09-2002",]
+"first_claim_done":[True,False]
+}
+]
+
+
+
+
+for elements in var:
+    for phone_numbers in phone_numbers:
+        if phone_numbers[type]='home':
+            number=phone_numbers[numbers]
+        else:
+            pass
+
+
+var = [
+{
+  "person": {
+    "name": "John Doe",
+    "age": 30,
+    "address": {
+      "street": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip": "12345"
+    },
+    "phone_numbers": [
+      {
+        "type": "home",
+        "number": "555-555-5555"
+      },
+      {
+        "type": "work",
+        "number": "555-555-5556"
+      }
+    ],
+    "is_active": true,
+    "hobbies": [
+      "reading",
+      "hiking",
+      "coding"
+    ]
+  }
+},
+]
+
+
+
+person:
+  name: John Doe
+  age: 30
+  address:
+    street: 123 Main St
+    city: Anytown
+    state: CA
+    zip: 12345
+  phone_numbers:
+    - type: home
+      number: 555-555-5555
+    - type: work
+      number: 555-555-5556
+  is_active: true
+  hobbies:
+    - reading
+    - hiking
+    - coding
+
+
+
+
+
+
+
+ODS :
+====
+
+
+source -->  ODS ( 1 weeks of data in ODS - Reporting on OLTP database ) ---> PUSHED WEEKLY (overnight batch) ---> PUsh to DW ( Reporting on  database OLAP )
+
+
+ODS
+( Medallian Architecture )
+
+Bronze Layer --         Silver Layer --             Gold Layer 
+( RAW DATA ) ( Cleaned data + BL applied ). ( Data rolled up or Aggrigated on the business KPIs or KBQs )
+
+Truncate Load
+
+stg_claims_proc
+stg_policy
+stg_survey
+
+                            dim_policy (pk)
+                            dim_customer (pk)
+                            dim_dates (pk)
+                            dim_territory (pk)
+                            fact_claims_process (fk)    report_claims (fk , pk , sk )
+                                                        report_surveys (fk , pk , sk )
+                                                        report_policy_sales (fk , pk , sk )
+
+
+
+
+10000 - each territory 
+
+50 territory 
+
+10000x50 = 500000 record
+
+
+
+
+2 use cases:
+-------------
+a) E-commerce data processing on AWS and Reporting
+b) Processing the user survey data , analysed  and report the user sentiments on the dashboard plus a self service chat interface powered by OpenAI gpt-4 model which will use user survey data.
+
+1. What data volume we can expect to flow into the system and what is going to freq ( everyday , weekly , month ) ?
+a) Database records 
+b) Files
+c) API data from source
+
+
+>>> Storage service 
+    - which type of files ( structure , semi-structure , unstructure )
+                            SQL database , NO SQL database , SQL/NOSQL 
+                            
+                             raw 
+                            (s3)
+
+>>> Processing service 
+ 1) volume 
+ 2) Freq
+ 3) Business logic
+
+ a) light weight process - lambda function ( 15 min )
+ b) Medium process - Glue
+ c) Heavy process - Split data into multiple streams ( process parallely )
+                    -- EC2 instance ( cloudera )
+                    -- EMR (elastic map reduce - Hadoop )
+
+
+
+Data  --> Data science ( analyse data , create model , model training , store the predicted output )
+      --> Reporting ( BI reports )
+
+
+
+a) E-commerce data processing on AWS and Reporting
+
+a) Real-time streaming data ( stream of data ) - POS machine (8am - 10pm)
+b) Batch data (12am)
+
+--------
+Storage:
+--------
+Before Processing:
+RAW -- S3 ( files )
+(structure , semi-structured)
+
+After processing:
+Structure - SQL ( RDS , Arora , Redshift )
+Semi-Structure - Json : Dynamodb database 
+S3 in the form of files 
+
+S3:
+source -- ecommerce_sales/raw/cust_transaction_yyyymmdd.csv
+processed data -- ecommerce_sales/processed
+
+----------------
+Processing:
+----------------
+
+s3 --> lambda function ( event trigger ) --> Call glue job using boto3 module --> [GLUE JOB]    
+       (python,nodejs,Golang,Javascript).     (glue = boto3.client('glue'))        -- Business logic application 
+                                                                                      on the data
+      
+       Quality Checks on the data
+       -- file shouldn't be 0 byte
+       -- file should have correct headers
+       -- duplicate user_ids
+       -- transaction_id should not be null
+
+
+Lambda:
+-------
+import boto3
+glue=boto3.client('glue')
+response = glue.start_job_run(JobName='ecommerce_process')
+
+
+
+-- Orchestration ( DAG )
+   -- Step function 
+
+
+box1
+return code - 1
+ |
+ v
+box2
+
+
+
+{
+    "name":"shobhit",
+    "data":{"this is a test data"}
+}
+
+{
+    "name":"shobhit",
+    "data":{}
+}
+
+
+if a==b:
+    print("a=b")
+else:
+    pass
+
+
+
+
+
+{
+    "survey_id":197309-17091-7309,
+    "survey_type":"textual survey",
+    "question1":"answer1",
+    "question2":"answer2",
+    ...........
+    ...........
+}
+
+0. check the schema of the data and clean data to make it standardized
+1. convert the json into row column data -- pandas.    (  )
+2. connect to database , insert the data in the table
+
+RDS
+
+survey_data
+
+survey_id, survey_type , questions , answers , insert_dt
+
+
+
+
+import pandas as pd
+df = pd.DataFrame(data)
+
+
+import boto3
+
+session=boto3.session("RDS")
+
+
+python
+service 1 -- service 2
+
+
+
+
+
+
+import pymysql
+import boto3
+import os
+import json
+import pandas as pd
+
+
+rds_host= os.environ['RDS_HOST']
+name=os.environ['DB_NAME']
+password = os.environ['PASSWORD']
+
+
+conn = pymysql.connect(host=rds_host,user=name,passwd=password)
+
+df = pd.DataFrame(data)
+
+with conn.cursor() as cursor:
+for records in df:
+        cursor.execute("INSERT into survey_data values (df['survey_id'],df['survey_name'],df['questions'],df['answers']")
+        cursor.commit()
+
+
+cursor.close()
+conn.close()
+
+
+
+
+
+OPENAI
+-- GPT4 turbo ( accepts text and responses are also in text )
+-- Omni model ( GPT 4-o ) 
+-- DALLE ( generate image )
+
+1. UI -> PROMPT -> OUTPUT
+2. Using REST APIs
+
+
+
+sample survey data:
+------------------
+
+data = [
+{
+    "survey_id":197309170917309,
+    "survey_type":"textual survey",
+    "question1":"answer1",
+    "question2":"answer2",
+    ...........
+    ...........
+},
+{
+    "survey_id":192309170917312,
+    "survey_type":"textual survey",
+    "question1":"answer1",
+    "question2":"answer2",
+    ...........
+    ...........
+}
+]
+
+-------------
+Databricks:
+-------------
+
+
+1.  Lakehouse platform in databricks
+2.  Unity Catalog
+3.  Delta tables
+
+
+
+
+Databricks  -- spark ( processing )
+            -- other opensource technologies ( Delta lake )
+            -- OSS Unity Catalog
+            -- ML flow 
+
+
+Lakehouse - Data lake + Data warehouse
+
+ACID transactions 
+
+source --> s3 --> DBFS mounted on S3 --> Databricks tables ( parquet format in the backend )
+                                         select * from table ;
+
+
+Onprim: Datawarehouse -- License , Storage + Compute , maintainance of datawarehouse -- Cost is high
+
+AWS: Redshift (MPP) - Datawarehouse -- Storage + Compute -- Cost is high
+
+
+s3 -- Lambda (15 min) -- glue -- database -- reportingtool 
+s3 -- glue -- database -- reportingtool 
+      (service is running)
+
+spin-up : creating/ configuring the servers to setup a service 
+
+Databricks 
+----------   + proton acceleration 
+  spark
+
+
+
+Lakehouse -- Delta tables ( normal table + time travel )
+
+customer - customer_id , customer_name , address 
+
+create table customer
+(
+customer_id int,
+customer_name string,
+address string
+) USING delta;
+
+versioning or version number 
+4 -- 3 
+
+CDC table
+
+1- data load (new record)
+2- data load (new record)
+3- data load (new records + existing updates)
+4- data load (new record)
+
+
+Unity Catalog:
+--------------
+Cataloging -- metadata of tables , applying some permissions on the tables for authorized use , maintaining the schema of data and also schema enforcement , data linege 
+
+1. hive_metastore
+2. unity catalog
+
+
+bronze_
+raw_
+
+silver_
+stage_
+
+gold_
+final_
+reporting_
+rpt_
